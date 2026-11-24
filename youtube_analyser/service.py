@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from .analysis import analyze
-from .models import AnalysisResult
-from .transcript import get_metadata, get_transcript
+from .models import AnalysisResult, VideoMetadata
+from .transcript import canonical_url, extract_video_id, get_metadata, get_transcript
 
 
 def run_analysis(
@@ -15,9 +15,15 @@ def run_analysis(
     whisper_model: str = "small",
     output_dir: str | None = None,
 ) -> AnalysisResult:
-    metadata = get_metadata(url)
     segments, source = get_transcript(url, language=language, whisper_model=whisper_model)
+    warnings: list[str] = []
+    try:
+        metadata = get_metadata(url)
+    except RuntimeError as exc:
+        metadata = VideoMetadata(video_id=extract_video_id(url), url=canonical_url(url))
+        warnings.append(str(exc))
     result = analyze(metadata, segments, source, language, model)
+    result.warnings = warnings
     if output_dir:
         save_result(result, output_dir)
     return result
@@ -51,6 +57,9 @@ def to_markdown(result: AnalysisResult) -> str:
         "",
     ]
     lines.extend(f"- {point}" for point in result.key_points)
+    if result.warnings:
+        lines.extend(["", "## Warnings", ""])
+        lines.extend(f"- {warning}" for warning in result.warnings)
     for heading, items in (
         ("Arguments and claims", result.claims),
         ("Examples", result.examples),

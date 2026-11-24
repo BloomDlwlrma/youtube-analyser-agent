@@ -57,6 +57,7 @@ class AnalysisResult(BaseModel):
     calls_to_action: list[str] = Field(default_factory=list)
     narrative_beats: list[NarrativeBeat] = Field(default_factory=list)
     reusable_template: list[str] = Field(min_length=1)
+    warnings: list[str] = Field(default_factory=list)
     transcript_source: Literal["captions", "whisper"] = "captions"
     model: str
 

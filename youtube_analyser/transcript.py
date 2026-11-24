@@ -109,3 +109,23 @@ def get_transcript(url: str, language: str = "en",
 
 def format_transcript(segments: list[TranscriptSegment]) -> str:
     return "\n".join(f"[{segment.start:.1f}s] {segment.text}" for segment in segments)
+
+
+def segment_windows(
+    segments: list[TranscriptSegment], max_chars: int = 12000
+) -> list[list[TranscriptSegment]]:
+    if max_chars < 1:
+        raise ValueError("max_chars must be positive")
+    windows: list[list[TranscriptSegment]] = []
+    current: list[TranscriptSegment] = []
+    current_chars = 0
+    for segment in segments:
+        if current and current_chars + len(segment.text) > max_chars:
+            windows.append(current)
+            current = []
+            current_chars = 0
+        current.append(segment)
+        current_chars += len(segment.text)
+    if current:
+        windows.append(current)
+    return windows
