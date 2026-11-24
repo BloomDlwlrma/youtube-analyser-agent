@@ -1,0 +1,29 @@
+{
+  "summary": "A fictional presenter suggests trying a small experiment.",
+  "key_points": ["Start small."],
+  "claims": ["A small experiment is manageable."],
+  "examples": [],
+  "quotes": ["Try one small experiment."],
+  "calls_to_action": ["Try one small experiment."],
+  "narrative_beats": [
+    {
+      "type": "cta",
+      "start": 2.0,
+      "end": 4.0,
+      "evidence": "Try one small experiment.",
+      "explanation": "The presenter invites action."
+    }
+  ],
+  "reusable_template": ["Introduce a manageable idea.", "Invite one concrete action."],
+  "metadata": {
+    "video_id": "fixture0001",
+    "title": "Synthetic example",
+    "channel": "Fixture",
+    "duration_seconds": 4,
+    "url": "https://www.youtube.com/watch?v=fixture0001"
+  },
+  "language": "en",
+  "warnings": [],
+  "transcript_source": "captions",
+  "model": "fixture-stub"
+}

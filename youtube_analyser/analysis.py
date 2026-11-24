@@ -5,7 +5,10 @@ import os
 import re
 from typing import Any
 
-from .models import AnalysisResult, TranscriptSegment, VideoMetadata
+import httpx
+import ollama
+
+from .models import AnalysisContent, AnalysisResult, TranscriptSegment, VideoMetadata
 from .transcript import format_transcript
 
 
@@ -29,11 +32,6 @@ def analyze(
     language: str,
     model: str,
 ) -> AnalysisResult:
-    try:
-        from ollama import Client
-    except ImportError as exc:
-        raise RuntimeError("Install the project dependencies before using Ollama analysis") from exc
-
     if not segments:
         raise ValueError("Cannot analyze an empty transcript")
     transcript = format_transcript(segments)
@@ -47,7 +45,7 @@ Transcript:
 {transcript}
 """
     host = os.getenv("OLLAMA_HOST")
-    client = Client(host=host) if host else Client()
+    client = ollama.Client(host=host) if host else ollama.Client()
     try:
         response = client.chat(
             model=model,
@@ -55,19 +53,19 @@ Transcript:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
             ],
-            format=AnalysisResult.model_json_schema(),
+            format=AnalysisContent.model_json_schema(),
             options={"temperature": 0},
         )
-    except (OSError, RuntimeError) as exc:
+    except (httpx.HTTPError, ollama.ResponseError, OSError, RuntimeError) as exc:
         raise RuntimeError(f"Ollama analysis failed: {exc}") from exc
     try:
-        payload = json.loads(_json_text(response))
+        payload = AnalysisContent.model_validate(json.loads(_json_text(response)))
         return AnalysisResult(
             metadata=metadata,
             language=language,
             transcript_source=transcript_source,
             model=model,
-            **payload,
+            **payload.model_dump(),
         )
     except (ValueError, TypeError) as exc:
         raise RuntimeError(f"Ollama returned invalid analysis JSON: {exc}") from exc

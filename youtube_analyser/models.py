@@ -46,9 +46,7 @@ class NarrativeBeat(BaseModel):
         return self
 
 
-class AnalysisResult(BaseModel):
-    metadata: VideoMetadata
-    language: str
+class AnalysisContent(BaseModel):
     summary: str = Field(min_length=1)
     key_points: list[str] = Field(default_factory=list)
     claims: list[str] = Field(default_factory=list)
@@ -57,6 +55,11 @@ class AnalysisResult(BaseModel):
     calls_to_action: list[str] = Field(default_factory=list)
     narrative_beats: list[NarrativeBeat] = Field(default_factory=list)
     reusable_template: list[str] = Field(min_length=1)
+
+
+class AnalysisResult(AnalysisContent):
+    metadata: VideoMetadata
+    language: str
     warnings: list[str] = Field(default_factory=list)
     transcript_source: Literal["captions", "whisper"] = "captions"
     model: str
